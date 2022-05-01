@@ -1,13 +1,15 @@
-FROM openjdk:11.0.11-jre-slim-buster as builder
+FROM openjdk:8-jre-slim-buster as builder
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Add Dependencies for PySpark
-RUN apt-get update && apt-get install -y curl vim wget software-properties-common ssh net-tools ca-certificates python3 python3-pip python3-numpy python3-matplotlib python3-scipy python3-pandas python3-simpy
+RUN apt-get update && apt-get install -y curl nano wget zip unzip software-properties-common ssh net-tools ca-certificates zlib1g-dev libjpeg62-turbo-dev libffi-dev python3 python3-pip python3-matplotlib python3-numpy python3-pandas
 
 RUN update-alternatives --install "/usr/bin/python" "python" "$(which python3)" 1
 
 # Fix the value of PYTHONHASHSEED
 # Note: this is needed when you use Python 3.3 or greater
-ENV SPARK_VERSION=3.0.2 \
+ENV SPARK_VERSION=3.2.0 \
 HADOOP_VERSION=3.2 \
 SPARK_HOME=/opt/spark \
 PYTHONHASHSEED=1
@@ -16,6 +18,17 @@ RUN wget --no-verbose -O apache-spark.tgz "https://archive.apache.org/dist/spark
 && mkdir -p /opt/spark \
 && tar -xf apache-spark.tgz -C /opt/spark --strip-components=1 \
 && rm apache-spark.tgz
+
+RUN pip3 install ipykernel && \
+    pip3 install jupyter && \
+    pip3 install pyspark==${SPARK_VERSION}
+
+RUN curl -s https://get.sdkman.io | bash
+RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh" && \
+    source "$HOME/.sdkman/bin/sdkman-init.sh" && \
+    sdk install maven && \
+    sdk install scala 2.12.15 && \
+    sdk use scala 2.12.15
 
 
 FROM builder as apache-spark
