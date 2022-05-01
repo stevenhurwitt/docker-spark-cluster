@@ -27,7 +27,13 @@ The following steps will make you run your spark cluster's containers.
 
 
 ```sh
-docker build -t cluster-apache-spark:3.0.2 .
+docker build -t cluster-apache-spark:3.2.0 .
+```
+
+## Remove untagged docker images
+
+```sh
+docker rmi $(docker images | grep "^<none>" | awk "{print $3}")
 ```
 
 ## Run the docker-compose

@@ -1,5 +1,7 @@
 FROM openjdk:8-jre-slim-buster as builder
 
+ARG shared_workspace=/opt/workspace
+
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Add Dependencies for PySpark
@@ -12,7 +14,8 @@ RUN update-alternatives --install "/usr/bin/python" "python" "$(which python3)" 
 ENV SPARK_VERSION=3.2.0 \
 HADOOP_VERSION=3.2 \
 SPARK_HOME=/opt/spark \
-PYTHONHASHSEED=1
+PYTHONHASHSEED=1 \
+SHARED_WORKSPACE=${shared_workspace}
 
 RUN wget --no-verbose -O apache-spark.tgz "https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" \
 && mkdir -p /opt/spark \
@@ -21,6 +24,7 @@ RUN wget --no-verbose -O apache-spark.tgz "https://archive.apache.org/dist/spark
 
 RUN pip3 install ipykernel && \
     pip3 install jupyter && \
+    pip3 install wget && \
     pip3 install pyspark==${SPARK_VERSION}
 
 RUN curl -s https://get.sdkman.io | bash
@@ -30,10 +34,16 @@ RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh" && \
     sdk install scala 2.12.15 && \
     sdk use scala 2.12.15
 
+VOLUME ${shared_workspace}
+
+WORKDIR ${SHARED_WORKSPACE}
+
 
 FROM builder as apache-spark
 
 WORKDIR /opt/spark
+
+# ARG shared_workspace=/opt/workspace
 
 ENV SPARK_MASTER_PORT=7077 \
 SPARK_MASTER_WEBUI_PORT=8080 \
@@ -43,7 +53,10 @@ SPARK_WORKER_LOG=/opt/spark/logs/spark-worker.out \
 SPARK_WORKER_WEBUI_PORT=8080 \
 SPARK_WORKER_PORT=7000 \
 SPARK_MASTER="spark://spark-master:7077" \
-SPARK_WORKLOAD="master"
+SPARK_WORKLOAD="master" \
+SHARED_WORKSPACE=${shared_workspace}
+
+# VOLUME ${shared_workspace}
 
 EXPOSE 8080 7077 7000
 
