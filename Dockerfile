@@ -40,7 +40,9 @@ RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh" && \
 # almond.sh for scala jupyter kernel
 RUN curl -Lo coursier https://git.io/coursier-cli && \
     chmod +x coursier && \
-    ./coursier launch --fork almond --scala 2.12 -- --install && \
+    ./coursier --help
+
+RUN ./coursier launch --fork almond:0.11.1 -v -v --scala 2.12 -- --install && \
     rm -f coursier
 
 
