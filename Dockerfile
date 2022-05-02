@@ -17,22 +17,32 @@ SPARK_HOME=/opt/spark \
 PYTHONHASHSEED=1 \
 SHARED_WORKSPACE=${shared_workspace}
 
+# Install spark
 RUN wget --no-verbose -O apache-spark.tgz "https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" \
 && mkdir -p /opt/spark \
 && tar -xf apache-spark.tgz -C /opt/spark --strip-components=1 \
 && rm apache-spark.tgz
 
+# Install python packages
 RUN pip3 install ipykernel && \
     pip3 install jupyter && \
     pip3 install wget && \
     pip3 install pyspark==${SPARK_VERSION}
 
+# sdkman for scala & maven
 RUN curl -s https://get.sdkman.io | bash
 RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh" && \
     source "$HOME/.sdkman/bin/sdkman-init.sh" && \
     sdk install maven && \
     sdk install scala 2.12.15 && \
     sdk use scala 2.12.15
+
+# almond.sh for scala jupyter kernel
+RUN curl -Lo coursier https://git.io/coursier-cli && \
+    chmod +x coursier && \
+    ./coursier launch --fork almond --scala 2.12 -- --install && \
+    rm -f coursier
+
 
 VOLUME ${shared_workspace}
 
@@ -58,7 +68,7 @@ SHARED_WORKSPACE=${shared_workspace}
 
 # VOLUME ${shared_workspace}
 
-EXPOSE 8080 7077 7000
+EXPOSE 8080 7077 7000 4040
 
 RUN mkdir -p $SPARK_LOG_DIR && \
 touch $SPARK_MASTER_LOG && \

@@ -9,6 +9,7 @@ services:
     ports:
       - "9090:8080"
       - "7077:7077"
+      - "4040:4040"
     volumes:
        - shared-workspace:/opt/workspace
        - ./apps:/opt/spark-apps
@@ -26,10 +27,10 @@ services:
       - spark-master
     environment:
       - SPARK_MASTER=spark://spark-master:7077
-      - SPARK_WORKER_CORES=3
-      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=4
+      - SPARK_WORKER_MEMORY=4G
       - SPARK_DRIVER_MEMORY=1G
-      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_EXECUTOR_MEMORY=4G
       - SPARK_WORKLOAD=worker
       - SPARK_LOCAL_IP=spark-worker-a
     volumes:
@@ -46,10 +47,10 @@ services:
       - spark-master
     environment:
       - SPARK_MASTER=spark://spark-master:7077
-      - SPARK_WORKER_CORES=3
-      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=4
+      - SPARK_WORKER_MEMORY=4G
       - SPARK_DRIVER_MEMORY=1G
-      - SPARK_EXECUTOR_MEMORY=2G
+      - SPARK_EXECUTOR_MEMORY=4G
       - SPARK_WORKLOAD=worker
       - SPARK_LOCAL_IP=spark-worker-b
     volumes:
